@@ -117,7 +117,16 @@ struct nodo{
 	list<Action> secuencia;
 	bool bikini=false;
 	bool zapatillas=false;
+	int coste=0;
 };
+
+bool operator< (const nodo &a, const nodo &b){
+	if (a.coste > b.coste)
+		return true;
+	else
+		return false;
+		
+}
 
 struct ComparaEstados{
 	bool operator()(const estado &a, const estado &n) const{
@@ -129,11 +138,6 @@ struct ComparaEstados{
 	}
 };
 
-struct ComparaParejas{ // struct para comparar parejas
-	bool operator () (const pair<nodo,int> &a, const pair<nodo,int> &b){
-		return a.second < b.second;
-	}
-};
 
 // Implementación de la búsqueda en profundidad.
 // Entran los puntos origen y destino y devuelve la
@@ -288,21 +292,17 @@ bool ComportamientoJugador::pathFinding_CostoUniforme(const estado &origen, cons
 	cout << "Calculando plan\n";
 	plan.clear();
 	set<estado,ComparaEstados> cerrados; // Lista de Cerrados
-	pair <nodo,int> pareja_actual, pareja_nueva;
-	multiset<pair<nodo,int>,ComparaParejas> abiertos;	// Lista de Abiertos
+	priority_queue<nodo,vector<nodo>,less<vector<nodo>::value_type> > abiertos;	// Lista de Abiertos
 	int coste_total=0;
 
   	nodo current;
 	current.st = origen;
 	current.secuencia.empty();
-	pareja_actual.first=current;
-	pareja_actual.second=0;
-	abiertos.insert(pareja_actual);
+	abiertos.push(current);
 
 
     while (!abiertos.empty() and (current.st.fila!=destino.fila or current.st.columna != destino.columna)){
-		//Sacamos de abiertos el nodo con coste mínimo que estará en la primera posición  
-		abiertos.erase(abiertos.begin());
+		abiertos.pop();
 		cerrados.insert(current.st);
 
 		
@@ -311,9 +311,8 @@ bool ComportamientoJugador::pathFinding_CostoUniforme(const estado &origen, cons
 		hijoTurnR.st.orientacion = (hijoTurnR.st.orientacion+1)%4;
 		if (cerrados.find(hijoTurnR.st) == cerrados.end()){
 			hijoTurnR.secuencia.push_back(actTURN_R);
-			pareja_nueva.first=hijoTurnR;
-			pareja_nueva.second=pareja_actual.second + coste(hijoTurnR.st,hijoTurnR.bikini,hijoTurnR.zapatillas);
-			abiertos.insert(pareja_nueva);
+			hijoTurnR.coste+= coste(hijoTurnR.st,hijoTurnR.bikini,hijoTurnR.zapatillas);
+			abiertos.push(hijoTurnR);
 
 		}
 
@@ -322,9 +321,8 @@ bool ComportamientoJugador::pathFinding_CostoUniforme(const estado &origen, cons
 		hijoTurnL.st.orientacion = (hijoTurnL.st.orientacion+3)%4;		
 		if (cerrados.find(hijoTurnL.st) == cerrados.end()){
 			hijoTurnL.secuencia.push_back(actTURN_L);
-			pareja_nueva.first=hijoTurnL;
-			pareja_nueva.second=pareja_actual.second + coste(hijoTurnL.st,hijoTurnL.bikini,hijoTurnL.zapatillas);
-			abiertos.insert(pareja_nueva);
+			hijoTurnL.coste+= coste(hijoTurnL.st,hijoTurnL.bikini,hijoTurnL.zapatillas);
+			abiertos.push(hijoTurnL);
 
 		}
 
@@ -333,24 +331,21 @@ bool ComportamientoJugador::pathFinding_CostoUniforme(const estado &origen, cons
 		if (!HayObstaculoDelante(hijoForward.st)){
 			if (cerrados.find(hijoForward.st) == cerrados.end()){
 				hijoForward.secuencia.push_back(actFORWARD);
-				pareja_nueva.first=hijoForward;
-				pareja_nueva.second=pareja_actual.second + coste(hijoTurnL.st, hijoForward.bikini,hijoForward.zapatillas);
-				abiertos.insert(pareja_nueva);
+				hijoForward.coste+= coste(hijoTurnL.st, hijoForward.bikini,hijoForward.zapatillas);
+				abiertos.push(hijoForward);
 
 			}
 		}
 
-		//Tomo el siguiente valor de la pila
+		//Tomo el siguiente valor de la cola con prioridad
 		if (!abiertos.empty()){
-			pareja_actual=*abiertos.begin();
-			current = pareja_actual.first;
-			coste_total=pareja_actual.second;
+			current=abiertos.top();
 
 			//comprobamos si el nodo actual es un bikini o unas zapatillas
-					if (mapaResultado[current.st.fila][current.st.columna]=='K' )//&& current.bikini==false)
+					if (mapaResultado[current.st.fila][current.st.columna]=='K' && current.bikini==false)
 						current.bikini=true;
 	
-					if (mapaResultado[current.st.fila][current.st.columna]=='D') //&& current.zapatillas==false)
+					if (mapaResultado[current.st.fila][current.st.columna]=='D' && current.zapatillas==false)
 						current.zapatillas=true;
 		}
 	
@@ -363,7 +358,7 @@ bool ComportamientoJugador::pathFinding_CostoUniforme(const estado &origen, cons
 		plan = current.secuencia;
 		cout << "Longitud del plan: " << plan.size() << endl;
 		PintaPlan(plan);
-		cout << "Coste total del plan: " << pareja_actual.second<< endl;
+		cout << "Coste total del plan: " << current.coste<< endl;
 		// ver el plan en el mapa
 		VisualizaPlan(origen, plan);
 		return true;
@@ -464,7 +459,7 @@ int ComportamientoJugador::coste (estado &st, bool bikini, bool zapatillas){
 			return 2;
 		break;
 
-		case 'X':
+		case 'X':       //Tengo en cuenta las casillas de recarga para el coste uniforme
 			return -10;
 		break;
 
