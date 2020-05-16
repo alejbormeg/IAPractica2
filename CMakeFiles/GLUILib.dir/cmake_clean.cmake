@@ -32,8 +32,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/GLUILib.dir/src/glui/glui_window.cpp.o"
   "CMakeFiles/GLUILib.dir/src/glui/quaternion.cpp.o"
   "CMakeFiles/GLUILib.dir/src/glui/viewmodel.cpp.o"
-  "lib/libGLUILib.pdb"
   "lib/libGLUILib.a"
+  "lib/libGLUILib.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

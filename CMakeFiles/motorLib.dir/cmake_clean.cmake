@@ -5,8 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/motorLib.dir/src/motorlib/motor_grafico.cpp.o"
   "CMakeFiles/motorLib.dir/src/motorlib/motor_juego.cpp.o"
   "CMakeFiles/motorLib.dir/src/motorlib/util.cpp.o"
-  "lib/libmotorLib.pdb"
   "lib/libmotorLib.a"
+  "lib/libmotorLib.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

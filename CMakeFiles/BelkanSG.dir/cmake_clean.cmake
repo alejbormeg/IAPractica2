@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/BelkanSG.dir/bin_src/juegoSG.cc.o"
-  "BelkanSG.pdb"
   "BelkanSG"
+  "BelkanSG.pdb"
+  "CMakeFiles/BelkanSG.dir/bin_src/juegoSG.cc.o"
 )
 
 # Per-language clean rules from dependency scanning.

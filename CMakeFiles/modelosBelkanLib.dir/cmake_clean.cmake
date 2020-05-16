@@ -10,8 +10,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/modelosBelkanLib.dir/src/modelos/jugador/jugador3d.cpp.o"
   "CMakeFiles/modelosBelkanLib.dir/src/modelos/jugador/quesito.cpp.o"
   "CMakeFiles/modelosBelkanLib.dir/src/modelos/retrato.cpp.o"
-  "lib/libmodelosBelkanLib.pdb"
   "lib/libmodelosBelkanLib.a"
+  "lib/libmodelosBelkanLib.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

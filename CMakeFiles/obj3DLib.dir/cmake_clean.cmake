@@ -15,8 +15,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/obj3DLib.dir/src/obj3dlib/octaedro3d.cc.o"
   "CMakeFiles/obj3DLib.dir/src/obj3dlib/tetraedro3d.cc.o"
   "CMakeFiles/obj3DLib.dir/src/obj3dlib/toro3d.cc.o"
-  "lib/libobj3DLib.pdb"
   "lib/libobj3DLib.a"
+  "lib/libobj3DLib.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

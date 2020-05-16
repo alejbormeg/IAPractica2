@@ -38,14 +38,13 @@ class ComportamientoJugador : public Comportamiento {
     int interact(Action accion, int valor);
     void VisualizaPlan(const estado &st, const list<Action> &plan);
     ComportamientoJugador * clone(){return new ComportamientoJugador(*this);}
-    int coste (estado &st);
+    int coste (estado &st, bool bikini, bool zapatillas);
   private:
     // Declarar Variables de Estado
     int fil, col, brujula;
     estado actual, destino;
     list<Action> plan;
     bool hayplan;
-    bool bikini=false, zapatillas=false;
 
     // Métodos privados de la clase
     bool pathFinding(int level, const estado &origen, const estado &destino, list<Action> &plan);

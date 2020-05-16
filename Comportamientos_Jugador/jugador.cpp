@@ -6,6 +6,7 @@
 #include <set>
 #include <stack>
 #include <queue>
+#include <utility>
 
 
 // Este es el método principal que debe contener los 4 Comportamientos_Jugador
@@ -55,7 +56,7 @@ bool ComportamientoJugador::pathFinding (int level, const estado &origen, const 
 				return pathFinding_Anchura(origen,destino,plan);
 						break;
 		case 3: cout << "Busqueda Costo Uniforme\n";
-						// Incluir aqui la llamada al busqueda de costo uniforme
+				return pathFinding_CostoUniforme(origen,destino,plan);
 						break;
 		case 4: cout << "Busqueda para el reto\n";
 						// Incluir aqui la llamada al algoritmo de búsqueda usado en el nivel 2
@@ -114,6 +115,8 @@ bool ComportamientoJugador::HayObstaculoDelante(estado &st){
 struct nodo{
 	estado st;
 	list<Action> secuencia;
+	bool bikini=false;
+	bool zapatillas=false;
 };
 
 struct ComparaEstados{
@@ -126,6 +129,11 @@ struct ComparaEstados{
 	}
 };
 
+struct ComparaParejas{ // struct para comparar parejas
+	bool operator () (const pair<nodo,int> &a, const pair<nodo,int> &b){
+		return a.second < b.second;
+	}
+};
 
 // Implementación de la búsqueda en profundidad.
 // Entran los puntos origen y destino y devuelve la
@@ -279,50 +287,73 @@ bool ComportamientoJugador::pathFinding_CostoUniforme(const estado &origen, cons
 	//Borro la lista
 	cout << "Calculando plan\n";
 	plan.clear();
-	set<estado,ComparaEstados> generados; // Lista de Cerrados
-	queue<nodo> cola;	// Lista de Abiertos
+	set<estado,ComparaEstados> cerrados; // Lista de Cerrados
+	pair <nodo,int> pareja_actual, pareja_nueva;
+	multiset<pair<nodo,int>,ComparaParejas> abiertos;	// Lista de Abiertos
+	int coste_total=0;
 
   	nodo current;
 	current.st = origen;
 	current.secuencia.empty();
+	pareja_actual.first=current;
+	pareja_actual.second=0;
+	abiertos.insert(pareja_actual);
 
-	cola.push(current);
 
-  while (!cola.empty() and (current.st.fila!=destino.fila or current.st.columna != destino.columna)){
+    while (!abiertos.empty() and (current.st.fila!=destino.fila or current.st.columna != destino.columna)){
+		//Sacamos de abiertos el nodo con coste mínimo que estará en la primera posición  
+		abiertos.erase(abiertos.begin());
+		cerrados.insert(current.st);
 
-		cola.pop();
-		generados.insert(current.st);
-
+		
 		// Generar descendiente de girar a la derecha
 		nodo hijoTurnR = current;
 		hijoTurnR.st.orientacion = (hijoTurnR.st.orientacion+1)%4;
-		if (generados.find(hijoTurnR.st) == generados.end()){
+		if (cerrados.find(hijoTurnR.st) == cerrados.end()){
 			hijoTurnR.secuencia.push_back(actTURN_R);
-			cola.push(hijoTurnR);
+			pareja_nueva.first=hijoTurnR;
+			pareja_nueva.second=pareja_actual.second + coste(hijoTurnR.st,hijoTurnR.bikini,hijoTurnR.zapatillas);
+			abiertos.insert(pareja_nueva);
 
 		}
 
 		// Generar descendiente de girar a la izquierda
 		nodo hijoTurnL = current;
-		hijoTurnL.st.orientacion = (hijoTurnL.st.orientacion+3)%4;
-		if (generados.find(hijoTurnL.st) == generados.end()){
+		hijoTurnL.st.orientacion = (hijoTurnL.st.orientacion+3)%4;		
+		if (cerrados.find(hijoTurnL.st) == cerrados.end()){
 			hijoTurnL.secuencia.push_back(actTURN_L);
-			cola.push(hijoTurnL);
+			pareja_nueva.first=hijoTurnL;
+			pareja_nueva.second=pareja_actual.second + coste(hijoTurnL.st,hijoTurnL.bikini,hijoTurnL.zapatillas);
+			abiertos.insert(pareja_nueva);
+
 		}
 
 		// Generar descendiente de avanzar
 		nodo hijoForward = current;
 		if (!HayObstaculoDelante(hijoForward.st)){
-			if (generados.find(hijoForward.st) == generados.end()){
+			if (cerrados.find(hijoForward.st) == cerrados.end()){
 				hijoForward.secuencia.push_back(actFORWARD);
-				cola.push(hijoForward);
+				pareja_nueva.first=hijoForward;
+				pareja_nueva.second=pareja_actual.second + coste(hijoTurnL.st, hijoForward.bikini,hijoForward.zapatillas);
+				abiertos.insert(pareja_nueva);
+
 			}
 		}
 
-		// Tomo el siguiente valor de la pila
-		if (!cola.empty()){
-			current = cola.front();
+		//Tomo el siguiente valor de la pila
+		if (!abiertos.empty()){
+			pareja_actual=*abiertos.begin();
+			current = pareja_actual.first;
+			coste_total=pareja_actual.second;
+
+			//comprobamos si el nodo actual es un bikini o unas zapatillas
+					if (mapaResultado[current.st.fila][current.st.columna]=='K' )//&& current.bikini==false)
+						current.bikini=true;
+	
+					if (mapaResultado[current.st.fila][current.st.columna]=='D') //&& current.zapatillas==false)
+						current.zapatillas=true;
 		}
+	
 	}
 
   cout << "Terminada la busqueda\n";
@@ -332,6 +363,7 @@ bool ComportamientoJugador::pathFinding_CostoUniforme(const estado &origen, cons
 		plan = current.secuencia;
 		cout << "Longitud del plan: " << plan.size() << endl;
 		PintaPlan(plan);
+		cout << "Coste total del plan: " << pareja_actual.second<< endl;
 		// ver el plan en el mapa
 		VisualizaPlan(origen, plan);
 		return true;
@@ -410,7 +442,7 @@ int ComportamientoJugador::interact(Action accion, int valor){
   return false;
 }
 
-int ComportamientoJugador::coste (estado &st){
+int ComportamientoJugador::coste (estado &st, bool bikini, bool zapatillas){
 	unsigned char casilla=mapaResultado[st.fila][st.columna];
 
 	switch (casilla){
@@ -430,6 +462,10 @@ int ComportamientoJugador::coste (estado &st){
 
 		case 'T':
 			return 2;
+		break;
+
+		case 'X':
+			return -10;
 		break;
 
 		default:
